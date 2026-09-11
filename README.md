@@ -15,7 +15,7 @@
 | 账户与余额 | 现金、储蓄卡、支付宝、微信、信用卡；自动余额、净资产、总资产/总负债；信用卡以「待还款」呈现 |
 | 账单 | 按日分组、每日小计；按时间范围/类型/账户/分类/关键词筛选；软删除记录可一键撤销 |
 | 统计 | 分类占比饼图、近 12 个月收支柱状趋势、收支对比（日均支出、笔数、单笔最高）、结余 |
-| 分类管理 | 内置 16 个常用中文分类，可增删改；被引用的分类只能归档（历史数据不受影响） |
+| 分类管理 | 内置 16 个常用中文分类，**名称、图标、配色均可自定义**；记一笔页有直达入口；被引用的分类只能归档（历史数据不受影响，可随时恢复） |
 | 数据 | 导出 JSON 完整备份与 CSV 流水表；导入支持「合并 / 覆盖」并给出差异预览 |
 
 ## 快速开始
@@ -26,7 +26,7 @@ Gradle 8.14。
 ```bash
 flutter pub get
 flutter analyze          # 期望：No issues found!
-flutter test             # 期望：全部通过（当前 208 个用例）
+flutter test             # 期望：全部通过（当前 221 个用例 / 1 跳过）
 flutter run              # 需要已连接的 Android 设备或模拟器
 flutter build apk --debug
 ```
@@ -142,7 +142,7 @@ lib/
   data/        存储与仓库：单文件 JSON 原子写入、仓库、导入导出、CSV、种子数据
   state/       界面偏好（主题、货币符号），随账本持久化
   ui/          Material 3 界面：首页 / 记账 / 账单 / 统计 / 账户 / 分类 / 设置
-test/          单元测试 + Widget 测试 + 不变量测试（208 例）
+test/          单元测试 + Widget 测试 + 不变量测试（221 例）
 docs/          api_reference / data_format / testing / harmony_migration
 tools/         start-emulator.ps1（启动模拟器并摆正窗口）
 screenshots/   人工验收截图（已 gitignore）
@@ -181,9 +181,9 @@ flutter test --coverage                        # 生成 coverage/lcov.info
 | 指标 | 结果 |
 |---|---|
 | `flutter analyze` | No issues found! |
-| `flutter test` | **208 个用例全部通过** |
-| 行覆盖率（全工程） | 86.2% |
-| 行覆盖率 core / domain / data / state | 97.5% / **94.6%** / **90.6%** / 100% |
+| `flutter test` | **221 个用例通过 / 1 跳过**（跳过原因见用例注释） |
+| 行覆盖率（全工程） | 86.8% |
+| 行覆盖率 core / domain / data / state | 97.5% / **94.6%** / **91.0%** / 100% |
 | `flutter build apk --debug` | 成功，产物 `build/app/outputs/flutter-apk/app-debug.apk` |
 
 覆盖重点：金额解析与格式化边界、交易不变量（含转账与手续费）、
@@ -195,7 +195,7 @@ JSON 往返一致、损坏文件回退到备份、未来版本数据拒绝加载
 操作序列（多组种子 × 220 步，含收入/支出/转账/编辑/软删撤销/非法输入/金额边界）
 反复执行，每一步之后都断言「一个健康账本必须永远满足的规则」——
 资产守恒、引用完整、主键唯一、分类聚合不丢钱、净资产与余额口径一致。
-UI 层覆盖率（约 59%）只反映 Widget 测试覆盖面，并非质量指标。
+UI 层覆盖率（73.4%）只反映 Widget 测试覆盖面，并非质量指标。
 
 测试怎么写、工具类怎么用、有哪些已知缺口，见 [`docs/testing.md`](docs/testing.md)。
 

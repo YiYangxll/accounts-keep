@@ -9,12 +9,29 @@ import 'package:accounts_keep/domain/account.dart';
 import 'package:accounts_keep/domain/category.dart';
 import 'package:accounts_keep/domain/enums.dart';
 import 'package:accounts_keep/domain/transaction.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// 测试期间固定使用的时间（本地时区解释）。
 final DateTime kTestNow = DateTime(2026, 3, 15, 12);
 
 /// 固定时钟，供需要注入时间的组件使用。
 DateTime fixedClock() => kTestNow;
+
+/// 在 `testWidgets` 里做**真实文件 I/O** 的逃生口。
+///
+/// 背景：`testWidgets` 的测试体跑在 Flutter 的 fake async 区里，`dart:io`
+/// 的真实异步操作在其中永远不会完成 —— 表现为测试直接卡死到超时（不是抛异常，
+/// 极难排查）。仓库的 read/write 都要落盘，所以凡是在 `testWidgets` 测试体里
+/// **直接调用仓库或建 TestLedger**，都必须用它包一层。
+///
+/// 通过**界面交互**触发的写入不需要包（那些发生在 tester 自己的 zone 里）。
+///
+/// ```dart
+/// final TestLedger ledger = (await runIo(tester, TestLedger.create))!;
+/// await runIo(tester, () => ledger.repository.addTransaction(tx));
+/// ```
+Future<T?> runIo<T>(WidgetTester tester, Future<T> Function() action) =>
+    tester.runAsync(action);
 
 /// 一个绑定临时目录的测试账本。
 final class TestLedger {

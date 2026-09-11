@@ -18,6 +18,7 @@ import '../../domain/category.dart';
 import '../../domain/enums.dart';
 import '../../domain/transaction.dart';
 import '../../state/settings_controller.dart';
+import '../categories/category_manager_page.dart';
 import '../common/icon_map.dart';
 import '../common/widgets.dart';
 
@@ -205,17 +206,37 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                 ),
                 const SizedBox(height: 16),
                 if (_kind != TxKind.transfer) ...<Widget>[
-                  Text(
-                    '分类',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  if (categories.isEmpty)
-                    Text(
-                      '暂无可用分类，请在「我的 → 分类管理」中添加',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Row(
+                    children: <Widget>[
+                      Text(
+                        '分类',
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
+                      const Spacer(),
+                      // 直达分类管理：用户往往是在这里才发现缺分类，
+                      // 不该被逼着退回「我的 → 分类管理」三层菜单去新增。
+                      TextButton.icon(
+                        onPressed: () => _manageCategories(repository),
+                        icon: const Icon(Icons.tune, size: 18),
+                        label: const Text('管理'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  if (categories.isEmpty)
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            '还没有${_kind.label}分类，点右上角「管理」新增一个',
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
                     )
                   else
                     Wrap(
@@ -401,6 +422,32 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
         time?.minute ?? _occurredAt.minute,
       );
     });
+  }
+
+  /// 打开分类管理，返回后校验当前选中项是否仍然可用。
+  Future<void> _manageCategories(LedgerRepository repository) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const CategoryManagerPage(),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    // 用户可能把刚选中的分类删掉（归档）了，此时要清掉选择，
+    // 否则保存时才报错，体验很差。
+    final String? selected = _categoryId;
+    if (selected == null) {
+      return;
+    }
+    final Category? category = repository.data.categoryById(selected);
+    final bool usable = category != null &&
+        !category.isArchived &&
+        category.kind.asTxKind == _kind;
+    if (!usable) {
+      setState(() => _categoryId = null);
+      showAppSnackBar(context, '所选分类已不可用，请重新选择');
+    }
   }
 
   Future<void> _save(LedgerRepository repository) async {

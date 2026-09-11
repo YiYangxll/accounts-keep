@@ -21,10 +21,9 @@ flutter test --plain-name "转账"                  # 按用例名筛选
 
 | 指标 | 值 |
 |---|---|
-| 用例总数 | **208** |
-| 行覆盖率（全工程） | 86.2% |
-| `core` / `domain` / `data` / `state` | 97.5% / **94.6%** / **90.6%** / 100% |
-| `ui` | 59.2%（只反映 Widget 覆盖面，不作为质量指标） |
+| 用例总数 | **221**（另有 1 条标记 skip，原因见用例注释） |
+| 行覆盖率（全工程） | 86.8% |
+| `core` / `domain` / `data` / **`ui`** / `state` | 97.5% / **94.6%** / **91.0%** / **73.4%** / 100% |
 
 覆盖率查看（Windows 上不一定有 `lcov`，可用 PowerShell 直接汇总）：
 
@@ -58,6 +57,8 @@ $rows | Sort-Object { $_.LH/$_.LF } | ForEach-Object { "{0,5:N0}%  {1}" -f (100.
 | `import_export_test.dart` | CSV 转义与 BOM、导出内容、JSON 往返一致、缺 `schemaVersion`/版本过高/非法 JSON 的拒绝、导入差异统计 |
 | `entry_flow_test.dart` | Widget：填金额选分类保存、空金额与未选分类的拦截、转账字段切换、分类随类型过滤 |
 | `entry_layout_test.dart` | Widget 布局：标签必须落在自己框内且不越界到相邻控件、输入框互不重叠、字号放大到 1.5 倍无 overflow、窄屏可滚到保存按钮 |
+| `category_customisation_test.dart` | 图标目录与配色板自检、分类新增/编辑可选图标与颜色、已归档分组与恢复按钮渲染、记一笔页的「管理」入口与用自定义分类记账、分类归档/恢复的仓库契约 |
+| `invariants_test.dart` | **不变量测试（属性测试）**：随机操作序列下账本必须永远自洽，详见第 4 节 |
 | `invariants_test.dart` | **不变量测试（属性测试）**：随机操作序列下账本必须永远自洽，详见第 4 节 |
 
 ## 4. 不变量测试（`invariants_test.dart`）
@@ -140,22 +141,69 @@ $rows | Sort-Object { $_.LH/$_.LF } | ForEach-Object { "{0,5:N0}%  {1}" -f (100.
    `schemaVersion` 过高、损坏文件。
 7. 提交前必须 `flutter analyze` 零问题、`flutter test` 全绿。
 
-## 7. 尚未覆盖的部分（已知缺口）
+## 7. Widget 测试的三个必知陷阱（都是本工程踩过的）
 
-以下属于 UI 层，目前只有 `entry_flow_test.dart` 的少量 Widget 测试；
-如需提高 UI 覆盖率，建议按此顺序补：
+这三条会让你花掉数小时：它们都**不报错、只是卡住或静默不生效**。
+
+### 7.1 `testWidgets` 里直接 `await` 仓库会死锁
+
+`testWidgets` 的测试体跑在 Flutter 的 **fake async** 区里，`dart:io` 的真实
+异步文件操作在其中**永远不会完成** —— 表现为测试卡死到 10 分钟超时
+（`TimeoutException`），而且不抛异常、看不到堆栈。
+
+```dart
+// ❌ 会死锁
+final ledger = await TestLedger.create();
+await ledger.repository.addTransaction(tx);
+
+// ✅ 用 test_utils.dart 的 runIo 逃出 fake async
+final ledger = (await runIo(tester, TestLedger.create))!;
+await runIo(tester, () => ledger.repository.addTransaction(tx));
+```
+
+**通过界面交互触发的写入不需要包**（那些发生在 tester 自己的 zone 里）——
+所以优先用界面流程，只有测试编排才用 `runIo`。
+
+### 7.2 `tester.pageBack()` 在中文界面下静默失效
+
+它内部靠 `find.byTooltip('Back')` 找返回按钮，而本工程是中文界面
+（tooltip 为「返回」），于是它**永远找不到、返回不会发生，而且不报错** ——
+后续断言只会"莫名其妙地失败"。用 `find.byType(BackButton)` 或直接
+`NavigatorState.pop()`。
+
+### 7.3 `scrollUntilVisible` 无法处理嵌套滚动区
+
+分类编辑器里图标网格是**嵌套**滚动区。给它外层的 Scrollable 做
+`scrollUntilVisible`/`dragUntilVisible` 完全无效（会一直滚到超时）。用
+`tester.ensureVisible(target)`（自动处理所有祖先滚动区），或像
+`scrollDownUntil` 那样逐个尝试 Scrollable。
+
+另外两个次要但有用的点：
+
+* **懒构建列表里在视口外的项**：`find.x` 返回空，`ensureVisible` 会抛
+  `Bad state: No element`。需要先滚动。
+* **`pumpAndSettle` 会等定时器**：SnackBar 有 3 秒自动关闭定时器，会一直等下去。
+  对含 SnackBar/折叠动画的流程改用定长 `pump(Duration)`（见
+  `category_customisation_test.dart` 的 `settleByPumping`）。
+
+## 8. 尚未覆盖的部分（已知缺口）
+
+当前 UI 层覆盖率 73.4%，仍有以下未自动化（建议按此顺序补）：
 
 1. 首页：空状态 → 记账后净资产/月汇总/最近流水刷新。
 2. 账单页：筛选面板交互（切月份、关键词、清空、空状态）。
 3. 统计页：无数据、单分类、`fl_chart` 渲染不抛异常。
 4. 账户页：新增/编辑对话框、有流水账户删除时必须二选一。
 5. 设置页：导出对话框展示路径、导入预览文案。
+6. **记一笔页「返回后清掉失效分类选择」**：这条用例已写好但标记为 `skip`，
+   原因是它依赖「弹窗确认 + 路由 pop + SnackBar 时序」的组合、在 widget 测试里
+   不稳定（见 `category_customisation_test.dart` 对应注释）。改进方向：把
+   「校验所选分类是否仍可用」抽成可注入的纯函数（如
+   `categoryIsUsable(repo, id, kind)`），直接对它做单元测试，而不是通过三段
+   界面交互去间接触发。
 
-Widget 测试注意事项（已在 `entry_flow_test.dart` 踩过）：
+另外，编辑器表单很长而测试窗口默认只有 800×600，**保存按钮会落在视口外**导致
+`tap` 报 "Found 0 widgets"。用
+`tester.binding.setSurfaceSize(const Size(800, 2400))` 放大窗口，或在 tap 前
+`ensureVisible`。
 
-* 编辑器表单很长，测试窗口默认只有 800×600，**保存按钮会落在视口外**导致
-  `tap` 报 "Found 0 widgets"。用
-  `tester.binding.setSurfaceSize(const Size(800, 2400))` 放大窗口，
-  或在 tap 前 `ensureVisible`。
-* 不要用 `pumpAndSettle` 等待「与 Widget 无关的异步仓库写盘」，
-  曾出现长时间挂起；纯仓库断言请用 `test()` 而非 `testWidgets()`。
