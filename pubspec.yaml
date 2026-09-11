@@ -1,0 +1,43 @@
+name: accounts_keep_test
+description: "记账 App：本地优先的个人收支记账工具（Android 优先，架构预留鸿蒙迁移）。"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+# 语言基线刻意保守（Dart 3.4 / Flutter 3.22 起），以对齐鸿蒙 Flutter 分支，
+# 避免使用仅较新 SDK 提供的语法与 API。详见 docs/harmony_migration.md。
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # 状态管理：API 稳定、无代码生成，鸿蒙迁移风险低。
+  provider: ^6.1.2
+
+  # 金额与日期格式化。区间上限保持在 0.20.x，以兼容 Dart 3.4 基线。
+  intl: '>=0.19.0 <0.21.0'
+
+  # 纯 Dart，无原生代码。
+  uuid: ^4.4.0
+  collection: ^1.18.0
+  fl_chart: ^0.68.0
+
+  # MVP 全项目唯一强原生依赖：获取应用文档目录。
+  # 所有平台能力收敛在 lib/core/platform_bridge.dart，便于后续替换。
+  path_provider: ^2.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # 固定到 4.x：5.x/6.x 要求 Dart 3.8+，会抬高语言基线。
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,13 @@
+# 统一换行符，避免 Windows/Linux 协作者互相刷行尾
+* text=auto eol=lf
+
+# 二进制文件不做换行转换与文本 diff
+*.png binary
+*.ico binary
+*.jar binary
+*.apk binary
+*.keystore binary
+*.jks binary
+
+# 生成物不参与 diff
+pubspec.lock linguist-generated=true
