@@ -149,7 +149,7 @@ final class LedgerData {
       'exportedAtUtc':
           (exportedAtUtc ?? DateTime.now()).toUtc().toIso8601String(),
       'app': <String, Object?>{
-        'name': 'accounts_keep_test',
+        'name': 'accounts_keep',
         'version': '1.0.0',
       },
       'counts': <String, Object?>{

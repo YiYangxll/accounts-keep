@@ -1,7 +1,7 @@
 /// 金额工具测试：分/元转换的精度与边界。
 library;
 
-import 'package:accounts_keep_test/core/money.dart';
+import 'package:accounts_keep/core/money.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

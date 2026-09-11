@@ -3,12 +3,12 @@ library;
 
 import 'dart:io';
 
-import 'package:accounts_keep_test/data/ledger_repository.dart';
-import 'package:accounts_keep_test/data/storage/ledger_storage.dart';
-import 'package:accounts_keep_test/domain/account.dart';
-import 'package:accounts_keep_test/domain/category.dart';
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/transaction.dart';
+import 'package:accounts_keep/data/ledger_repository.dart';
+import 'package:accounts_keep/data/storage/ledger_storage.dart';
+import 'package:accounts_keep/domain/account.dart';
+import 'package:accounts_keep/domain/category.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/transaction.dart';
 
 /// 测试期间固定使用的时间（本地时区解释）。
 final DateTime kTestNow = DateTime(2026, 3, 15, 12);

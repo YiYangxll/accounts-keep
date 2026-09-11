@@ -1,12 +1,12 @@
 /// Widget 测试：记一笔的完整闭环（选择类型/金额/分类/账户 → 保存 → 余额与净资产更新）。
 library;
 
-import 'package:accounts_keep_test/data/ledger_repository.dart';
-import 'package:accounts_keep_test/domain/account.dart';
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/selectors.dart';
-import 'package:accounts_keep_test/state/settings_controller.dart';
-import 'package:accounts_keep_test/ui/entry/transaction_editor_page.dart';
+import 'package:accounts_keep/data/ledger_repository.dart';
+import 'package:accounts_keep/domain/account.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/selectors.dart';
+import 'package:accounts_keep/state/settings_controller.dart';
+import 'package:accounts_keep/ui/entry/transaction_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

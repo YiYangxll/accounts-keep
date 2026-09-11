@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="accounts_keep_test"
+        android:label="记账本"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

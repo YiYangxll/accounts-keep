@@ -64,7 +64,7 @@ Future<Directory> documentsDirectory() async {
 在工程内生成 `ohos/`（由鸿蒙 Flutter 分支的 `flutter create --platforms=ohos .` 提供），
 并核对：
 
-* `ohos/` 内的应用包名与 Android 侧一致（当前 `com.example.accounts_keep_test`）。
+* `ohos/` 内的应用包名与 Android 侧一致（当前 `com.yiyangxll.accounts_keep`）。
 * 应用名与图标。
 * **不申请网络权限**（与 Android 侧一致，本应用完全离线）。
 

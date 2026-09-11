@@ -1,12 +1,12 @@
 /// 核心工具补充测试：Result、JSON 防御式解析、日期扩展与偏好控制器。
 library;
 
-import 'package:accounts_keep_test/core/date_x.dart';
-import 'package:accounts_keep_test/core/json_x.dart';
-import 'package:accounts_keep_test/core/result.dart';
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/ledger_error.dart';
-import 'package:accounts_keep_test/state/settings_controller.dart';
+import 'package:accounts_keep/core/date_x.dart';
+import 'package:accounts_keep/core/json_x.dart';
+import 'package:accounts_keep/core/result.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/ledger_error.dart';
+import 'package:accounts_keep/state/settings_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_utils.dart';

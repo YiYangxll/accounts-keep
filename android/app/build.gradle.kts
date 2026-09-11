@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.accounts_keep_test"
+    namespace = "com.yiyangxll.accounts_keep"
     compileSdk = flutter.compileSdkVersion
     // 本工程不含任何原生（C/C++）代码，也不需要原生依赖，因此刻意不声明
     // ndkVersion：AGP 一旦声明该属性就会要求本机安装对应 NDK（含许可证与
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.accounts_keep_test"
+        applicationId = "com.yiyangxll.accounts_keep"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

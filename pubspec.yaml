@@ -1,5 +1,5 @@
-name: accounts_keep_test
-description: "记账 App：本地优先的个人收支记账工具（Android 优先，架构预留鸿蒙迁移）。"
+name: accounts_keep
+description: "记账本：本地优先的个人收支记账应用（Android 优先，架构预留鸿蒙迁移）。"
 publish_to: 'none'
 
 version: 1.0.0+1

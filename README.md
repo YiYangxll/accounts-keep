@@ -1,7 +1,11 @@
-# 记账本（accounts_keep_test）
+# 记账本（accounts_keep）
 
 本地优先的个人记账 App。Android 优先交付，界面简体中文，货币人民币。
 **全部数据保存在本机，App 不申请网络权限，完全离线可用。**
+
+* Dart 包名：`accounts_keep`
+* Android 应用 ID：`com.yiyangxll.accounts_keep`
+* 应用显示名：记账本
 
 ## 功能
 

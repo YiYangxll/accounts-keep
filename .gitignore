@@ -50,3 +50,8 @@ app.*.map.json
 
 # 人工验收时抓取的截图
 /screenshots/
+
+# 构建/测试输出日志（本机排查用，不入库）
+*_log.txt
+*_log2.txt
+*_rename.txt

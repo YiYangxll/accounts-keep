@@ -1,9 +1,9 @@
 /// 账单筛选条件测试：时间边界、组合条件与关键词。
 library;
 
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/transaction.dart';
-import 'package:accounts_keep_test/domain/transaction_filter.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/transaction.dart';
+import 'package:accounts_keep/domain/transaction_filter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_utils.dart';

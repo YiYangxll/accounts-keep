@@ -1,4 +1,4 @@
-package com.example.accounts_keep_test
+package com.yiyangxll.accounts_keep
 
 import io.flutter.embedding.android.FlutterActivity
 

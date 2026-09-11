@@ -10,7 +10,8 @@
   exports/             导出结果存放目录
 ```
 
-* Android 上 `<应用文档目录>` 等价于 `/data/data/com.example.accounts_keep_test/app_flutter`。
+* Android 上 `<应用文档目录>` 等价于
+  `/data/data/com.yiyangxll.accounts_keep/app_flutter`。
 * 该目录属于应用私有空间，卸载应用会一并删除，**不会**自动同步到任何服务器。
 * 应用不申请网络权限，也不申请外部存储权限。
 

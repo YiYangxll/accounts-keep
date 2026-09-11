@@ -1,12 +1,12 @@
 /// 领域模型测试：不变量校验、序列化与日期归属。
 library;
 
-import 'package:accounts_keep_test/core/date_x.dart';
-import 'package:accounts_keep_test/domain/account.dart';
-import 'package:accounts_keep_test/domain/category.dart';
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/ledger_error.dart';
-import 'package:accounts_keep_test/domain/transaction.dart';
+import 'package:accounts_keep/core/date_x.dart';
+import 'package:accounts_keep/domain/account.dart';
+import 'package:accounts_keep/domain/category.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/ledger_error.dart';
+import 'package:accounts_keep/domain/transaction.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_utils.dart';

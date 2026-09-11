@@ -1,12 +1,12 @@
 /// 选择器测试：余额、净资产、分类聚合与趋势。
 library;
 
-import 'package:accounts_keep_test/core/date_x.dart';
-import 'package:accounts_keep_test/domain/account.dart';
-import 'package:accounts_keep_test/domain/category.dart';
-import 'package:accounts_keep_test/domain/enums.dart';
-import 'package:accounts_keep_test/domain/selectors.dart';
-import 'package:accounts_keep_test/domain/transaction.dart';
+import 'package:accounts_keep/core/date_x.dart';
+import 'package:accounts_keep/domain/account.dart';
+import 'package:accounts_keep/domain/category.dart';
+import 'package:accounts_keep/domain/enums.dart';
+import 'package:accounts_keep/domain/selectors.dart';
+import 'package:accounts_keep/domain/transaction.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_utils.dart';
