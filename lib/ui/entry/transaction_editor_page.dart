@@ -114,6 +114,9 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
     }
 
     return Scaffold(
+      // 表单较长，键盘弹起时把可视区收缩，让 ListView 能滚动到当前输入框，
+      // 避免下方的账户/日期等控件被键盘盖住。
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(_isEditing ? '编辑流水' : '记一笔'),
         actions: <Widget>[
@@ -177,16 +180,24 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                   ],
+                  // 金额字号远大于正文，需要比主题默认更多的垂直内边距，
+                  // 否则标签「金额」、输入的数字与光标会显得挤在一起。
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
+                    height: 1.2,
                   ),
+                  scrollPadding: const EdgeInsets.only(bottom: 200),
                   decoration: InputDecoration(
                     prefixText: '${settings.currencySymbol} ',
                     prefixStyle: const TextStyle(fontSize: 24),
                     labelText: '金额',
                     hintText: '0.00',
                     errorText: _amountError,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 18,
+                    ),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -261,6 +272,7 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                     ],
+                    scrollPadding: const EdgeInsets.only(bottom: 200),
                     decoration: InputDecoration(
                       labelText: '手续费（可选）',
                       prefixText: '${settings.currencySymbol} ',
@@ -273,14 +285,22 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                   borderRadius: BorderRadius.circular(12),
                   onTap: _pickDate,
                   child: InputDecorator(
-                    decoration: const InputDecoration(labelText: '日期'),
+                    decoration: const InputDecoration(
+                      labelText: '日期',
+                      isDense: true,
+                    ),
                     child: Row(
                       children: <Widget>[
                         const Icon(Icons.event_outlined, size: 18),
                         const SizedBox(width: 8),
-                        Text('${_occurredAt.dateText} '
+                        Expanded(
+                          child: Text(
+                            '${_occurredAt.dateText} '
                             '${_occurredAt.hour.toString().padLeft(2, '0')}:'
-                            '${_occurredAt.minute.toString().padLeft(2, '0')}'),
+                            '${_occurredAt.minute.toString().padLeft(2, '0')}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -498,7 +518,8 @@ class _AccountPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       initialValue: accounts.any((Account a) => a.id == value) ? value : null,
-      decoration: InputDecoration(labelText: label),
+      // 与其它输入框保持一致的紧凑内边距，避免账户行过高、与相邻的日期行挤在一起。
+      decoration: InputDecoration(labelText: label, isDense: true),
       items: <DropdownMenuItem<String>>[
         for (final Account a in accounts)
           DropdownMenuItem<String>(

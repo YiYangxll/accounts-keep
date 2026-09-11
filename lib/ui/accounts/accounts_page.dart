@@ -268,15 +268,20 @@ class _AccountEditorDialogState extends State<AccountEditorDialog> {
             TextField(
               controller: _nameController,
               autofocus: true,
+              scrollPadding: const EdgeInsets.only(bottom: 160),
               decoration: const InputDecoration(
                 labelText: '账户名称',
                 hintText: '如：工资卡',
+                isDense: true,
               ),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<AccountKind>(
               initialValue: _kind,
-              decoration: const InputDecoration(labelText: '账户类型'),
+              decoration: const InputDecoration(
+                labelText: '账户类型',
+                isDense: true,
+              ),
               items: <DropdownMenuItem<AccountKind>>[
                 for (final AccountKind kind in AccountKind.values)
                   DropdownMenuItem<AccountKind>(
@@ -298,9 +303,11 @@ class _AccountEditorDialogState extends State<AccountEditorDialog> {
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]')),
               ],
+              scrollPadding: const EdgeInsets.only(bottom: 160),
               decoration: const InputDecoration(
                 labelText: '期初余额',
                 helperText: '信用卡欠款请填负数',
+                isDense: true,
               ),
             ),
             if (widget.existing != null) ...<Widget>[

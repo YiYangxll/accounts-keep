@@ -412,23 +412,28 @@ class _ImportDialogState extends State<_ImportDialog> {
       title: const Text('导入数据'),
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text(
-              '把导出的 JSON 备份内容粘贴到下面，然后点击「解析」。',
-              style: TextStyle(fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _controller,
-              maxLines: 8,
-              decoration: const InputDecoration(
-                hintText: '{"schemaVersion":1,...}',
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                '把导出的 JSON 备份内容粘贴到下面，然后点击「解析」。',
+                style: TextStyle(fontSize: 12),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: _controller,
+                // 8 行的输入框很高，键盘弹起时对话框空间不足，必须让内容可滚动，
+                // 否则会出现 overflow 条纹。
+                maxLines: 8,
+                scrollPadding: const EdgeInsets.only(bottom: 160),
+                decoration: const InputDecoration(
+                  hintText: '{"schemaVersion":1,...}',
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: <Widget>[
@@ -582,26 +587,32 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
       title: Text(
         widget.existing == null ? '新增${widget.kind.label}分类' : '编辑分类',
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          TextField(
-            controller: _nameController,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: '分类名称'),
-          ),
-          if (widget.existing != null) ...<Widget>[
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _saving ? null : () => _delete(repository),
-                icon: const Icon(Icons.delete_outline, size: 18),
-                label: const Text('删除分类'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              scrollPadding: const EdgeInsets.only(bottom: 160),
+              decoration: const InputDecoration(
+                labelText: '分类名称',
+                isDense: true,
               ),
             ),
+            if (widget.existing != null) ...<Widget>[
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _saving ? null : () => _delete(repository),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('删除分类'),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
       actions: <Widget>[
         TextButton(
