@@ -222,10 +222,22 @@ abstract final class Selectors {
         .toList();
   }
 
-  /// 净资产 = 所有未归档账户余额之和（转账自动抵消）。
-  static int netWorth(List<Account> accounts, List<Transaction> transactions) {
+  /// 净资产 = 所有**未归档**账户余额之和（转账自动抵消）。
+  ///
+  /// 归档账户**整体不计入**：连它流水带来的影响也一并排除，
+  /// 因为归档的语义是「不再参与统计、但历史仍可查」。
+  /// 需要包含归档账户的总额（例如做对账校验）时传 `includeArchived: true`。
+  static int netWorth(
+    List<Account> accounts,
+    List<Transaction> transactions, {
+    bool includeArchived = false,
+  }) {
     int total = 0;
-    for (final AccountBalance b in balances(accounts, transactions)) {
+    for (final AccountBalance b in balances(
+      accounts,
+      transactions,
+      includeArchived: includeArchived,
+    )) {
       total += b.balanceCents;
     }
     return total;

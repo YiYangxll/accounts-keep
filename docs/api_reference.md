@@ -121,6 +121,10 @@ Future<Directory> documentsDirectory()
 | `accountBalance(account, txs)` | 单账户余额（含转账与手续费） |
 | `balances(accounts, txs, {includeArchived})` | → `List<AccountBalance>` |
 | `netWorth` / `totalAssets` / `totalLiabilities` | 净资产与资产/负债汇总 |
+
+> `netWorth(accounts, txs, {includeArchived = false})`：默认**归档账户整体不计入**
+> —— 连它流水带来的影响也一并排除，因为归档语义是「不再参与统计、历史仍可查」。
+> 做对账校验时可传 `includeArchived: true` 拿全量。
 | `sortedByTimeDesc(txs)` | 时间倒序（同刻按 id 稳定） |
 | `totalsByCategory(txs, {kind, categories})` | → `List<CategoryTotal>` |
 | `withShares(totals)` | 补占比 → `List<CategoryShare>` |

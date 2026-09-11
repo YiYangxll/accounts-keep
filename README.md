@@ -26,7 +26,7 @@ Gradle 8.14。
 ```bash
 flutter pub get
 flutter analyze          # 期望：No issues found!
-flutter test             # 期望：全部通过（当前 191 个用例）
+flutter test             # 期望：全部通过（当前 208 个用例）
 flutter run              # 需要已连接的 Android 设备或模拟器
 flutter build apk --debug
 ```
@@ -142,7 +142,7 @@ lib/
   data/        存储与仓库：单文件 JSON 原子写入、仓库、导入导出、CSV、种子数据
   state/       界面偏好（主题、货币符号），随账本持久化
   ui/          Material 3 界面：首页 / 记账 / 账单 / 统计 / 账户 / 分类 / 设置
-test/          单元测试 + Widget 测试（191 例）
+test/          单元测试 + Widget 测试 + 不变量测试（208 例）
 docs/          api_reference / data_format / testing / harmony_migration
 tools/         start-emulator.ps1（启动模拟器并摆正窗口）
 screenshots/   人工验收截图（已 gitignore）
@@ -181,16 +181,21 @@ flutter test --coverage                        # 生成 coverage/lcov.info
 | 指标 | 结果 |
 |---|---|
 | `flutter analyze` | No issues found! |
-| `flutter test` | **191 个用例全部通过** |
-| 行覆盖率（全工程） | 85.3% |
-| 行覆盖率 core / domain / data / state | 97.5% / **94.2%** / 88.8% / 100% |
+| `flutter test` | **208 个用例全部通过** |
+| 行覆盖率（全工程） | 86.2% |
+| 行覆盖率 core / domain / data / state | 97.5% / **94.6%** / **90.6%** / 100% |
 | `flutter build apk --debug` | 成功，产物 `build/app/outputs/flutter-apk/app-debug.apk` |
 
 覆盖重点：金额解析与格式化边界、交易不变量（含转账与手续费）、
 **转账不改变净资产**、信用卡符号语义、跨月/跨年/闰月边界、筛选组合、
 JSON 往返一致、损坏文件回退到备份、未来版本数据拒绝加载、导入合并统计、
 **落盘失败时内存态回滚且不丢数据**。
-UI 层覆盖率（约 58%）只反映 Widget 测试覆盖面，并非质量指标。
+
+其中 `test/invariants_test.dart` 是**不变量测试**（属性测试）：用固定种子的随机
+操作序列（多组种子 × 220 步，含收入/支出/转账/编辑/软删撤销/非法输入/金额边界）
+反复执行，每一步之后都断言「一个健康账本必须永远满足的规则」——
+资产守恒、引用完整、主键唯一、分类聚合不丢钱、净资产与余额口径一致。
+UI 层覆盖率（约 59%）只反映 Widget 测试覆盖面，并非质量指标。
 
 测试怎么写、工具类怎么用、有哪些已知缺口，见 [`docs/testing.md`](docs/testing.md)。
 
