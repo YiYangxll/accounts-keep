@@ -272,16 +272,12 @@ class _AccountEditorDialogState extends State<AccountEditorDialog> {
               decoration: const InputDecoration(
                 labelText: '账户名称',
                 hintText: '如：工资卡',
-                isDense: true,
               ),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<AccountKind>(
               initialValue: _kind,
-              decoration: const InputDecoration(
-                labelText: '账户类型',
-                isDense: true,
-              ),
+              decoration: const InputDecoration(labelText: '账户类型'),
               items: <DropdownMenuItem<AccountKind>>[
                 for (final AccountKind kind in AccountKind.values)
                   DropdownMenuItem<AccountKind>(
@@ -307,7 +303,6 @@ class _AccountEditorDialogState extends State<AccountEditorDialog> {
               decoration: const InputDecoration(
                 labelText: '期初余额',
                 helperText: '信用卡欠款请填负数',
-                isDense: true,
               ),
             ),
             if (widget.existing != null) ...<Widget>[

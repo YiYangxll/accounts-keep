@@ -595,10 +595,7 @@ class _CategoryEditorDialogState extends State<CategoryEditorDialog> {
               controller: _nameController,
               autofocus: true,
               scrollPadding: const EdgeInsets.only(bottom: 160),
-              decoration: const InputDecoration(
-                labelText: '分类名称',
-                isDense: true,
-              ),
+              decoration: const InputDecoration(labelText: '分类名称'),
             ),
             if (widget.existing != null) ...<Widget>[
               const SizedBox(height: 16),

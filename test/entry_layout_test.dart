@@ -107,6 +107,59 @@ void main() {
       }
     });
 
+    testWidgets('浮动标签必须留在自己的输入框内，不越界到相邻控件', (WidgetTester tester) async {
+      await pumpEditor(tester);
+
+      // 每个「标签文本」都要被某个输入框的矩形完整包住。
+      // 历史问题：标签框过矮（isDense/内边距不足）时，标签会越过框的中线、
+      // 落到相邻控件的视觉区间里，看起来就像「金额/账户/日期与输入框重叠」。
+      final List<Rect> decorators = <Rect>[
+        for (int i = 0;
+            i < tester.widgetList(find.byType(InputDecorator)).length;
+            i++)
+          tester.getRect(find.byType(InputDecorator).at(i)),
+      ];
+
+      for (final String label in <String>[
+        '金额',
+        '账户',
+        '日期',
+        '交易对象（可选）',
+        '备注（可选）',
+      ]) {
+        final Finder finder = find.text(label);
+        expect(finder, findsWidgets, reason: '标签「$label」应存在');
+
+        final Rect labelRect = tester.getRect(finder.first);
+        final bool insideSomeField = decorators.any(
+          (Rect field) =>
+              labelRect.top >= field.top - 1 &&
+              labelRect.bottom <= field.bottom + 1 &&
+              labelRect.left >= field.left - 1 &&
+              labelRect.right <= field.right + 1,
+        );
+        expect(
+          insideSomeField,
+          isTrue,
+          reason: '标签「$label」${labelRect.top.toStringAsFixed(1)}-'
+              '${labelRect.bottom.toStringAsFixed(1)} 未被任何输入框包住：'
+              '${decorators.map((Rect r) => '${r.top.toStringAsFixed(0)}-${r.bottom.toStringAsFixed(0)}').join(', ')}',
+        );
+
+        // 标签顶部离框顶不能太远，否则说明它掉到框的中下部了。
+        final Rect owner = decorators.firstWhere(
+          (Rect field) =>
+              labelRect.top >= field.top - 1 &&
+              labelRect.bottom <= field.bottom + 1,
+        );
+        expect(
+          labelRect.top - owner.top,
+          lessThanOrEqualTo(owner.height / 2),
+          reason: '标签「$label」应贴在框的上半部，而不是掉到中下部',
+        );
+      }
+    });
+
     testWidgets('金额输入框比普通输入框更高（大字号不会被挤扁）', (WidgetTester tester) async {
       await pumpEditor(tester);
 

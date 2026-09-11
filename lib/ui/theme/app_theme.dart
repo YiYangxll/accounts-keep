@@ -72,8 +72,11 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
+        // 垂直内边距刻意给足：Material 3 的浮动标签会占用框顶部约 16px，
+        // 内边距过小时标签会越过框的中线、贴到上一行的视觉区间里，
+        // 看上去就像「账户/日期与输入框重叠」。横向保持紧凑。
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       ),
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16),

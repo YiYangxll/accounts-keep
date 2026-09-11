@@ -194,9 +194,11 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                     labelText: '金额',
                     hintText: '0.00',
                     errorText: _amountError,
+                    // 金额框保留 0.00 占位提示，因此不强制常驻上浮；
+                    // 它本身只有 1 行、上下没有紧邻的输入框，不会出现标签粘连。
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 18,
+                      vertical: 20,
                     ),
                   ),
                   onChanged: (_) => setState(() {}),
@@ -277,6 +279,7 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                       labelText: '手续费（可选）',
                       prefixText: '${settings.currencySymbol} ',
                       errorText: _feeError,
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
                 ],
@@ -287,7 +290,7 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: '日期',
-                      isDense: true,
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                     child: Row(
                       children: <Widget>[
@@ -310,7 +313,9 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                   controller: _payeeController,
                   decoration: const InputDecoration(
                     labelText: '交易对象（可选）',
-                    hintText: '如：公司、某超市',
+                    // 标签常驻上浮，位置不随焦点/内容变化，避免空框时标签落在框内
+                    // 偏下位置、与相邻的日期框视觉粘连。
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -319,7 +324,7 @@ class _TransactionEditorPageState extends State<TransactionEditorPage> {
                   maxLines: 2,
                   decoration: const InputDecoration(
                     labelText: '备注（可选）',
-                    hintText: '补充说明',
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -518,8 +523,12 @@ class _AccountPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       initialValue: accounts.any((Account a) => a.id == value) ? value : null,
-      // 与其它输入框保持一致的紧凑内边距，避免账户行过高、与相邻的日期行挤在一起。
-      decoration: InputDecoration(labelText: label, isDense: true),
+      // 标签常驻上浮，与其它输入框的标签位置保持一致（否则账户行的标签会
+      // 落在框内偏下位置，视觉上与相邻的日期行粘连）。
+      decoration: InputDecoration(
+        labelText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+      ),
       items: <DropdownMenuItem<String>>[
         for (final Account a in accounts)
           DropdownMenuItem<String>(
