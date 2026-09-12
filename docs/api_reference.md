@@ -144,7 +144,12 @@ Future<Directory> documentsDirectory()
 
 * `resolveRange({now})` → `LocalDateRange?`（左闭右开，`all` 返回 null）
 * `matches(tx, {now})` / `apply(txs, {now})`
-* `rangeLabel`、`activeFilterCount`、`isUnfiltered`、`copyWith`、`cleared()`
+* `rangeLabel` / `labelWith({start, endExclusive, fallback})`
+* `activeFilterCount`：只统计**用户额外附加**的条件（类型/账户/分类/关键词），
+  时间范围由 `rangeLabel` 单独展示，不重复计入
+* `isUnfiltered`：以 `DateRangePreset.thisMonth`（账单页默认视图）为基准；
+  「全部时间」是用户主动放宽范围，属于**有**筛选
+* `copyWith`、`cleared()`
 
 转账按**转出或转入账户**任一匹配即命中；关键词同时匹配备注、交易对象、标签，
 以及金额的两种写法（`123.45` 与 `12345`）。

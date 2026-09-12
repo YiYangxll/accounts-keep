@@ -8,10 +8,17 @@ plugins {
 android {
     namespace = "com.yiyangxll.accounts_keep"
     compileSdk = flutter.compileSdkVersion
-    // 本工程不含任何原生（C/C++）代码，也不需要原生依赖，因此刻意不声明
-    // ndkVersion：AGP 一旦声明该属性就会要求本机安装对应 NDK（含许可证与
-    // 数百 MB 下载），对纯 Dart 应用属于无谓负担。若将来引入原生插件，
-    // 请在此恢复 `ndkVersion = flutter.ndkVersion` 并安装对应 NDK。
+    // 本工程自身不含任何原生（C/C++）代码，因此这里刻意不**写死** ndkVersion，
+    // 避免把本机 NDK 版本锁进仓库。
+    //
+    // 但要注意：path_provider_android 2.3.1 起会传递依赖 jni / jni_flutter 这两个
+    // native_build 插件，Flutter Gradle Plugin 会自动补上默认 ndkVersion
+    // （实测 28.2.13676358），于是构建**确实需要本机安装 NDK**。
+    // 若报 "LicenceNotAcceptedException: ndk;xx"：先
+    //   sdkmanager --install "ndk;xx"
+    // 再确认 android/local.properties 的 sdk.dir 指向真实 SDK
+    // （曾经被自动改写成 "E:\Program Files"，导致许可证找不到）。
+    // 想彻底摆脱 NDK，可把 path_provider_android 固定到不依赖 jni 的旧版本。
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

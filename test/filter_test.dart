@@ -230,9 +230,11 @@ void main() {
   });
 
   group('条件计数与副本', () {
-    test('activeFilterCount 反映已启用条件', () {
+    test('activeFilterCount 只统计用户额外附加的条件', () {
+      // 默认视图（本月、无附加条件）不该被认为「有筛选」。
       expect(const TransactionFilter().activeFilterCount, 0);
-      expect(TransactionFilter.all.activeFilterCount, 1);
+      // 「全部时间」是放宽时间范围，时间由区间标签展示，不计入附加条件徽标。
+      expect(TransactionFilter.all.activeFilterCount, 0);
       expect(
         const TransactionFilter(
           kinds: <TxKind>{TxKind.expense},
@@ -240,15 +242,36 @@ void main() {
         ).activeFilterCount,
         2,
       );
+      expect(
+        const TransactionFilter(
+          accountIds: <String>{'acc'},
+          categoryIds: <String>{'cat'},
+        ).activeFilterCount,
+        2,
+      );
     });
 
-    test('isUnfiltered 判定', () {
-      expect(TransactionFilter.all.isUnfiltered, isTrue);
-      expect(const TransactionFilter().isUnfiltered, isFalse);
+    test('isUnfiltered 判定以「本月」为基准', () {
+      // 账单页默认就是「本月」，因此默认视图是无筛选的。
+      expect(const TransactionFilter().isUnfiltered, isTrue);
+      // 「全部时间」是用户主动放宽了时间范围，属于「有筛选」。
+      expect(TransactionFilter.all.isUnfiltered, isFalse);
       expect(
         const TransactionFilter(
           preset: DateRangePreset.all,
           keyword: 'x',
+        ).isUnfiltered,
+        isFalse,
+      );
+      expect(
+        const TransactionFilter(
+          kinds: <TxKind>{TxKind.expense},
+        ).isUnfiltered,
+        isFalse,
+      );
+      expect(
+        const TransactionFilter(
+          preset: DateRangePreset.lastMonth,
         ).isUnfiltered,
         isFalse,
       );
@@ -284,6 +307,31 @@ void main() {
         ).rangeLabel,
         '2026-03-01 ~ 2026-03-14',
       );
+    });
+
+    test('labelWith：自定义未选区间时回落到「自定义」而不是当前预设名', () {
+      // 回归用例：早先它回落到 `label`，而「自定义」那颗 chip 传的是
+      // `_draft.preset`（默认「本月」），于是 chip 显示成「本月」，
+      // 与真正的「本月」chip 同名，用户无法区分。
+      expect(DateRangePreset.custom.labelWith(), '自定义');
+      expect(
+        DateRangePreset.custom.labelWith(
+          start: DateTime(2026, 3, 10),
+          endExclusive: DateTime(2026, 3, 12),
+        ),
+        '2026-03-10 ~ 2026-03-11',
+      );
+      // 只填了一头时同样回落到 fallback，不会给出半截区间。
+      expect(
+        DateRangePreset.custom.labelWith(start: DateTime(2026, 3, 10)),
+        '自定义',
+      );
+      // 非自定义预设不受 start/end 影响。
+      expect(
+        DateRangePreset.thisMonth.labelWith(start: DateTime(2026, 3, 10)),
+        '本月',
+      );
+      expect(DateRangePreset.all.labelWith(), '全部');
     });
   });
 }

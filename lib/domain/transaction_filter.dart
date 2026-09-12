@@ -39,11 +39,19 @@ extension DateRangePresetLabel on DateRangePreset {
       };
 
   /// 带自定义区间时的展示文本。
-  String labelWith({DateTime? start, DateTime? endExclusive}) {
-    if (this != DateRangePreset.custom ||
-        start == null ||
-        endExclusive == null) {
+  ///
+  /// [DateRangePreset.custom] 在**尚未选区间**时回落到 [fallback]（默认「自定义」）。
+  /// 早期实现直接回落到 [label]，于是这颗 chip 与「本月」那颗同名，用户无法区分。
+  String labelWith({
+    DateTime? start,
+    DateTime? endExclusive,
+    String fallback = '自定义',
+  }) {
+    if (this != DateRangePreset.custom) {
       return label;
+    }
+    if (start == null || endExclusive == null) {
+      return fallback;
     }
     final DateTime lastDay = endExclusive.subtract(const Duration(days: 1));
     return '${start.dateText} ~ ${lastDay.dateText}';
@@ -100,16 +108,21 @@ final class TransactionFilter {
   bool get hasEntityFilter =>
       kinds.isNotEmpty || accountIds.isNotEmpty || categoryIds.isNotEmpty;
 
-  /// 是否完全无附加条件（等于「全部」视图）。
+  /// 是否没有「额外」筛选条件（等于账单页的默认视图）。
+  ///
+  /// 注意基准是 [DateRangePreset.thisMonth] 而不是 [DateRangePreset.all]：
+  /// 账单页默认就是「本月」，`all` 反而是用户主动放宽时间范围的结果。
+  /// 早先这里比较的是 `all`，导致默认视图被判定为「有筛选」，
+  /// 于是账单页一进来就显示「清除」按钮、空状态也误报「没有符合条件的记录」。
   bool get isUnfiltered =>
-      preset == DateRangePreset.all && !hasKeyword && !hasEntityFilter;
+      preset == DateRangePreset.thisMonth && !hasKeyword && !hasEntityFilter;
 
   /// 已启用条件的数量，用于在界面上显示筛选徽标。
+  ///
+  /// 只统计**用户额外附加**的条件（类型/账户/分类/关键词）；时间范围由
+  /// [rangeLabel] 单独展示，不重复计入。
   int get activeFilterCount {
     int count = 0;
-    if (preset != DateRangePreset.thisMonth) {
-      count += 1;
-    }
     count += kinds.length;
     if (accountIds.isNotEmpty) {
       count += 1;

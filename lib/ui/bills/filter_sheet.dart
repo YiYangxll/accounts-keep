@@ -102,8 +102,11 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ),
                   ),
                 ChoiceChip(
+                  // 这颗 chip 代表「自定义」，与上面的预设是并列关系，
+                  // 因此无论当前预设是什么，未选区间时都应显示「自定义」
+                  // （不能借用 _draft.preset.label：那是「本月」）。
                   label: Text(
-                    _draft.preset.labelWith(
+                    DateRangePreset.custom.labelWith(
                       start: _draft.customStart,
                       endExclusive: _draft.customEndExclusive,
                     ),

@@ -21,7 +21,26 @@ import 'filter_sheet.dart';
 /// 账单页。
 class BillListPage extends StatefulWidget {
   /// 构造。
-  const BillListPage({super.key});
+  const BillListPage({super.key, this.now});
+
+  /// 时钟，便于测试注入固定的「本月」。
+  ///
+  /// 「本月 / 上月 / 近三月」这类**相对**时间范围需要知道「今天是哪天」。
+  /// 不注入时用系统时间；注入后相对区间与筛选面板共用同一个基准，
+  /// 保证测试不受真实系统日期影响（否则跨月运行时结论会变）。生产环境不传。
+  final DateTime Function()? now;
+
+  /// 筛选条上「清除」按钮的定位键（仅未处于默认视图时出现）。
+  static const Key quickClearKey = Key('bills-quick-clear');
+
+  /// 筛选条上漏斗按钮的定位键。
+  static const Key filterButtonKey = Key('bills-filter-button');
+
+  /// 当前时间范围标签的定位键。
+  static const Key rangeLabelKey = Key('bills-range-label');
+
+  /// 筛选条件数徽标的定位键。
+  static const Key filterBadgeKey = Key('bills-filter-badge');
 
   @override
   State<BillListPage> createState() => _BillListPageState();
@@ -37,7 +56,7 @@ class _BillListPageState extends State<BillListPage> {
     final String symbol = settings.currencySymbol;
 
     final List<Transaction> matched =
-        _filter.apply(repository.data.transactions);
+        _filter.apply(repository.data.transactions, now: widget.now?.call());
     final List<Transaction> sorted = Selectors.sortedByTimeDesc(matched);
     final PeriodSummary summary = Selectors.summarize(matched);
     final Map<String, List<Transaction>> byDay = <String, List<Transaction>>{};
@@ -93,7 +112,11 @@ class _BillListPageState extends State<BillListPage> {
   }
 
   Future<void> _openFilter() async {
-    final TransactionFilter? next = await showFilterSheet(context, _filter);
+    final TransactionFilter? next = await showFilterSheet(
+      context,
+      _filter,
+      now: widget.now?.call(),
+    );
     if (next == null || !mounted) {
       return;
     }
@@ -123,6 +146,7 @@ class _FilterBar extends StatelessWidget {
           Expanded(
             child: Text(
               rangeText,
+              key: BillListPage.rangeLabelKey,
               style: theme.textTheme.titleSmall,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -130,14 +154,17 @@ class _FilterBar extends StatelessWidget {
           ),
           if (!filter.isUnfiltered)
             TextButton.icon(
+              key: BillListPage.quickClearKey,
               onPressed: onQuickClear,
               icon: const Icon(Icons.close, size: 16),
               label: const Text('清除'),
             ),
           Badge(
+            key: BillListPage.filterBadgeKey,
             isLabelVisible: filter.activeFilterCount > 0,
             label: Text('${filter.activeFilterCount}'),
             child: IconButton(
+              key: BillListPage.filterButtonKey,
               tooltip: '筛选',
               onPressed: onEdit,
               icon: const Icon(Icons.filter_alt_outlined),

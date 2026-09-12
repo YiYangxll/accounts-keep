@@ -19,7 +19,29 @@ import '../theme/app_theme.dart';
 /// 首页。
 class HomePage extends StatelessWidget {
   /// 构造。
-  const HomePage({super.key});
+  const HomePage({super.key, this.now});
+
+  /// 时钟，便于测试注入固定的「本月」。
+  ///
+  /// 首页概览只统计「本月」，若直接用 `DateTime.now()`，测试就无法在不依赖
+  /// 真实系统时间的前提下断言本月合计（跨月运行时结论还会变）。生产环境不传。
+  final DateTime Function()? now;
+
+  /// 概览卡片上「净资产」金额的定位键。
+  ///
+  /// 同一个金额文本在首页会合法地出现多次（净资产、本月收入/支出/结余、
+  /// 以及最近流水里的那一条），只按文本断言必然歧义，因此给这几个展示位
+  /// 固定 key，供测试与无障碍定位使用。
+  static const Key netWorthKey = Key('home-net-worth');
+
+  /// 「本月收入」金额的定位键。
+  static const Key monthIncomeKey = Key('home-month-income');
+
+  /// 「本月支出」金额的定位键。
+  static const Key monthExpenseKey = Key('home-month-expense');
+
+  /// 「结余」金额的定位键。
+  static const Key monthNetKey = Key('home-month-net');
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +50,7 @@ class HomePage extends StatelessWidget {
     final List<Transaction> active =
         Selectors.active(repository.data.transactions);
     // 首页概览固定看「本月」，历史数据请到账单页按区间查看。
-    final MonthKey thisMonth = MonthKey.of(DateTime.now());
+    final MonthKey thisMonth = MonthKey.of((now ?? DateTime.now)());
     final PeriodSummary summary =
         Selectors.summarize(Selectors.inMonth(active, thisMonth));
     final int netWorth = Selectors.netWorth(
@@ -151,6 +173,7 @@ class _NetWorthCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       Money.format(netWorthCents, symbol: symbol),
+                      key: HomePage.netWorthKey,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -165,6 +188,7 @@ class _NetWorthCard extends StatelessWidget {
                     child: _AmountColumn(
                       label: '本月收入',
                       text: Money.format(incomeCents, symbol: symbol),
+                      valueKey: HomePage.monthIncomeKey,
                       color: AppTheme.incomeColor,
                     ),
                   ),
@@ -177,6 +201,7 @@ class _NetWorthCard extends StatelessWidget {
                     child: _AmountColumn(
                       label: '本月支出',
                       text: Money.format(expenseCents, symbol: symbol),
+                      valueKey: HomePage.monthExpenseKey,
                       color: AppTheme.expenseColor,
                     ),
                   ),
@@ -189,6 +214,7 @@ class _NetWorthCard extends StatelessWidget {
                     child: _AmountColumn(
                       label: '结余',
                       text: Money.format(net, symbol: symbol),
+                      valueKey: HomePage.monthNetKey,
                       color: AppTheme.amountColor(context, net),
                     ),
                   ),
@@ -207,11 +233,15 @@ class _AmountColumn extends StatelessWidget {
     required this.label,
     required this.text,
     required this.color,
+    this.valueKey,
   });
 
   final String label;
   final String text;
   final Color color;
+
+  /// 金额文本的定位键（见 [HomePage.netWorthKey] 的说明）。
+  final Key? valueKey;
 
   @override
   Widget build(BuildContext context) {
@@ -229,6 +259,7 @@ class _AmountColumn extends StatelessWidget {
           fit: BoxFit.scaleDown,
           child: Text(
             text,
+            key: valueKey,
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 15,

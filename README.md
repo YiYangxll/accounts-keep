@@ -26,7 +26,7 @@ Gradle 8.14。
 ```bash
 flutter pub get
 flutter analyze          # 期望：No issues found!
-flutter test             # 期望：全部通过（当前 221 个用例 / 1 跳过）
+flutter test             # 期望：全部通过（当前 240 个用例 / 1 跳过）
 flutter run              # 需要已连接的 Android 设备或模拟器
 flutter build apk --debug
 ```
@@ -48,8 +48,19 @@ flutter build apk --debug
    `~/.gradle/wrapper/dists/gradle-8.14-bin/<hash>/gradle-8.14-bin.zip.part`
    再让 Gradle 自己完成校验与解压。
 
-另外，本工程刻意不声明 `ndkVersion`：项目不含任何原生代码，声明它只会迫使本机
-下载数百 MB 的 NDK 并要求接受其许可证（详见 `android/app/build.gradle.kts` 注释）。
+另外，本工程**刻意不写死** `ndkVersion`（避免把本机 NDK 版本锁进仓库），
+但构建**仍然需要 NDK**：`path_provider_android` 2.3.1 起会传递依赖
+`jni` / `jni_flutter` 这两个 native_build 插件，Flutter Gradle Plugin 会自动补上
+默认版本（本机实测 `28.2.13676358`）。报
+`LicenceNotAcceptedException: ndk;xx` 时按提示补装即可：
+
+```powershell
+sdkmanager --install "ndk;xx"
+```
+
+> ⚠️ `android/local.properties` 会被构建**重新生成**并可能把 `sdk.dir` 写回
+> `E:\Program Files`（本机真实 SDK 在 `E:\SDK\Android`）。一旦构建突然报许可证
+> 或 SDK 找不到，先检查这个文件——详见 `android/app/build.gradle.kts` 里的注释。
 
 ## 用 Android Studio 打开
 
@@ -133,6 +144,14 @@ powershell -ExecutionPolicy Bypass -File .\tools\start-emulator.ps1 -Avd 其它�
 > 应用数据目录注意：`path_provider` 的 `getApplicationDocumentsDirectory()` 在 Android 上
 > 返回的是 `<应用数据目录>/app_flutter`，**不是** `files/`，排查数据文件时别找错地方。
 
+第二轮走查（补测账单页筛选相关缺陷后）确认了三处修复：
+
+| 验证项 | 修复前 | 修复后 |
+|---|---|---|
+| 账单页默认视图 | 一进页面就出现多余的「清除」按钮 | 不出现（仅时间范围或附加条件被改过才出现） |
+| 账单页空状态文案 | 误报「试试放宽筛选条件」 | 「点击「记一笔」开始记账」 |
+| 筛选面板时间范围 | 「自定义」chip 显示成「本月」，与「本月」chip 同名 | 显示「自定义」，选完区间后显示起止日期 |
+
 ## 架构
 
 ```
@@ -142,7 +161,7 @@ lib/
   data/        存储与仓库：单文件 JSON 原子写入、仓库、导入导出、CSV、种子数据
   state/       界面偏好（主题、货币符号），随账本持久化
   ui/          Material 3 界面：首页 / 记账 / 账单 / 统计 / 账户 / 分类 / 设置
-test/          单元测试 + Widget 测试 + 不变量测试（221 例）
+test/          单元测试 + Widget 测试 + 不变量测试（240 例）
 docs/          api_reference / data_format / testing / harmony_migration
 tools/         start-emulator.ps1（启动模拟器并摆正窗口）
 screenshots/   人工验收截图（已 gitignore）
@@ -173,6 +192,8 @@ flutter test test/selectors_test.dart          # 统计与余额计算
 flutter test test/persistence_test.dart        # 落盘、损坏回退、版本校验
 flutter test test/repository_errors_test.dart  # 落盘失败回滚（模拟磁盘故障）
 flutter test test/entry_flow_test.dart         # 记一笔闭环（Widget）
+flutter test test/home_refresh_test.dart       # 首页数字刷新（Widget）
+flutter test test/bills_filter_test.dart       # 账单筛选交互（Widget）
 flutter test --coverage                        # 生成 coverage/lcov.info
 ```
 
@@ -181,21 +202,25 @@ flutter test --coverage                        # 生成 coverage/lcov.info
 | 指标 | 结果 |
 |---|---|
 | `flutter analyze` | No issues found! |
-| `flutter test` | **221 个用例通过 / 1 跳过**（跳过原因见用例注释） |
-| 行覆盖率（全工程） | 86.8% |
-| 行覆盖率 core / domain / data / state | 97.5% / **94.6%** / **91.0%** / 100% |
+| `flutter test` | **240 个用例通过 / 1 跳过**（跳过原因见用例注释） |
+| 行覆盖率（仅 `lib/`，core / domain / data / state / ui） | 97.5% / 95.2% / 88.5% / 100% / **68.8%** |
 | `flutter build apk --debug` | 成功，产物 `build/app/outputs/flutter-apk/app-debug.apk` |
 
 覆盖重点：金额解析与格式化边界、交易不变量（含转账与手续费）、
 **转账不改变净资产**、信用卡符号语义、跨月/跨年/闰月边界、筛选组合、
 JSON 往返一致、损坏文件回退到备份、未来版本数据拒绝加载、导入合并统计、
-**落盘失败时内存态回滚且不丢数据**。
+**落盘失败时内存态回滚且不丢数据**、首页数字随数据刷新、账单筛选面板的
+完整交互链路。
 
 其中 `test/invariants_test.dart` 是**不变量测试**（属性测试）：用固定种子的随机
 操作序列（多组种子 × 220 步，含收入/支出/转账/编辑/软删撤销/非法输入/金额边界）
 反复执行，每一步之后都断言「一个健康账本必须永远满足的规则」——
 资产守恒、引用完整、主键唯一、分类聚合不丢钱、净资产与余额口径一致。
-UI 层覆盖率（73.4%）只反映 Widget 测试覆盖面，并非质量指标。
+UI 层覆盖率（68.8%）只反映 Widget 测试覆盖面，并非质量指标。
+
+自动化测试已经抓出过若干真实缺陷（筛选默认视图被误判为"已筛选"、
+筛选条件计数口径、自定义区间 chip 与"本月"同名等），清单见
+[`docs/testing.md`](docs/testing.md) 第 8 节。
 
 测试怎么写、工具类怎么用、有哪些已知缺口，见 [`docs/testing.md`](docs/testing.md)。
 
